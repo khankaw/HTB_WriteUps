@@ -1,7 +1,9 @@
 # Wing Data Write Up
 
 **No distribuir mientras la  máquina esté activa**
+
 **Créditos al creado de la máquina y los scripts mostrados: WackyH4cker**
+
 
 Wing Data es una máquina Linux que concatena las siguientes vulnerabilidades y configuraciones:
 
@@ -29,3 +31,10 @@ de la función, que permite resolver symlinks con secuencias de path traversal s
 indicado para resolver la máquina, se crea un archivo .tar con una serie de directorios anidados con nombres largos y sus respectivos symlinks. Éstos, al final, apuntan a un archivo, también
 con un nombre largo y este a su vez, apunta a una secuencia de path traversal hasta llegar a /root/.ssh/authorized_keys, en dónde se escribe la llave pública de la máquina atacante
 para obtener acceso como root sin contraseña.
+
+## Referencias
+https://nvd.nist.gov/vuln/detail/CVE-2025-4517
+
+https://github.com/google/security-research/security/advisories/GHSA-hgqp-3mmf-7h8f
+
+https://nvd.nist.gov/vuln/detail/CVE-2025-47812
