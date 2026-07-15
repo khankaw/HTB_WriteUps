@@ -28,6 +28,12 @@ Es una vulnerabilidad de Authentication Bypass dentro del protocolo Telnet. Ocur
 el valor de la variable de entorno USER dentro del comando para negociar la conexión. En esta variable se puede colocar el valor de root y se iniciará la conexión
 como root sin solicitd de contraseña.
 
+## Referencias
+
+https://sensepost.com/blog/2025/investigating-an-in-the-wild-campaign-using-rce-in-craftcms/#technical-analysis
+
+https://www.offsec.com/blog/cve-2026-24061/
+
 
 
 
