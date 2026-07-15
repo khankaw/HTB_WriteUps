@@ -19,14 +19,14 @@ Orion es una máquina Linux que concatena las siguientes vulnerabilidades y conf
 ## CVE-2025-32432
 
 Es una vulneranilidad de Remote Code Execution dentro de Craft CMS que ocurre debido a que el endpoint admin/actions/assets/generatetransform está disponible para recibir 
-POST requests sin necesidad ade autenticación. Dentro de la petición POST se puede incluir un payload en forma de JSON que será interpretado por Yii como la configuración
+POST requests sin necesidad de autenticación. Dentro de la petición POST se puede incluir un payload en forma de JSON que será interpretado por Yii como la configuración
 de un objeto, por lo tanto el código será ejecutado.
 
 ## CVE-2026-24061
 
 Es una vulnerabilidad de Authentication Bypass dentro del protocolo Telnet. Ocurre debido a que no hay una sanitización del input de usuario a la hora de redefinir
 el valor de la variable de entorno USER dentro del comando para negociar la conexión. En esta variable se puede colocar el valor de root y se iniciará la conexión
-como root sin solicitd de contraseña.
+como root sin solicitud de contraseña.
 
 ## Referencias
 
