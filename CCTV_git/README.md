@@ -36,7 +36,7 @@ sanitizado, se interpertará como código. La vulnerabilidad consiste en que la 
 y lo que se escriba en los campos image_file_name y movie_filename se escribirá
 directamente en /etc/motioneye/camera-*.conf.
 
-## Referncias
+## Referencias
 
 1. https://github.com/BridgerAlderson/CVE-2024-51482
 2. https://github.com/advisories/GHSA-j945-qm58-4gjx
