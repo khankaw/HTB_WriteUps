@@ -2,7 +2,7 @@
 
 **No distribuir mientras la  máquina esté activa**
 
-**Créditos al creado de la máquina y los scripts mostrados: holdthefort**
+**Créditos al creador de la máquina y los scripts mostrados: holdthefort**
 
 CCTV es una máquina Linux que concatena las siguientes vulnerabilidades: 
 
