@@ -29,3 +29,10 @@ presente en Polkit 0.115. Permite hacer un bypass de autenticación para ejecuta
 lógico dentro de Polkit. 
 Si se envía una petición usando dbus-send y esta misma petición se mata rápidamente, se rompe el ciclo lógico de verificación y Polkit asume que la petición viene de root,
 por lo que ejecuta la petición. Esta petición puede ser crear un usuario dentro del grupo sudo para poder solicitar una shell como root.
+
+## Referencias
+
+https://wpscan.com/vulnerability/3413b879-785f-4c9f-aa8a-5a4a1d5e0ba2/  
+https://github.blog/security/vulnerability-research/privilege-escalation-polkit-root-on-linux-with-bug/   
+https://www.hackingarticles.in/linux-privilege-escalation-polkit-cve-2021-3560/  
+https://github.com/secnigma/CVE-2021-3560-Polkit-Privilege-Esclation  
