@@ -2,9 +2,15 @@
 
 **Se incluyen, en español, write ups y material adicional para las siguientes máquinas liberadas de Hack The Box**
 
+## Linux:
+
 1. Wing Data
 2. Cap
 3. Orion
 4. CCTV
 5. MetaTwo
 6. Paper
+
+## Windows:
+
+1. Baby
