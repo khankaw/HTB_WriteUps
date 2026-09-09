@@ -10,6 +10,7 @@
 4. CCTV
 5. MetaTwo
 6. Paper
+7. Knife
 
 ## Windows:
 
