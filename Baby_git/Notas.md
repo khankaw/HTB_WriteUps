@@ -15,7 +15,7 @@
 * SeBackupPrivilege permite leer cualquier archivo del sistema con el propósito de respaldarlo, saltándose
   ACL's y los permisos NTFS estándar.
 
-* SeBackupRestorePRivilege permite sobreescribir cualquier archivo del sistema con el propósito de
+* SeBackupRestorePrivilege permite sobreescribir cualquier archivo del sistema con el propósito de
   respaldarlo.
 
 * ### ¿Qué es una HIVE?
