@@ -21,3 +21,4 @@
 2. Remote
 3. Timelapse
 4. Retro
+5. Return
